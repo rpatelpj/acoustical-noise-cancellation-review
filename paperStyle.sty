@@ -1,7 +1,10 @@
 %% Preferred Preamble
 % % !TEX TS-program = pdflatex
-% \documentclass[11pt]{article} % Handles all other preferred formatting
-% \usepackage[ln]{paperStyle}
+% \documentclass[11pt]{article} % Note: handles all other preferred formatting
+% \usepackage{paperStyle}
+
+%% Option
+% ln: add last name to page number i.e. \usepackage[ln]{paperStyle}
 
 %% Document Setup
 \usepackage[utf8]{inputenc}
@@ -10,6 +13,7 @@
 \usepackage{setspace}
 \onehalfspacing
 \usepackage{hyperref}
+\usepackage[titles]{tocloft} % Note: placed before parskip package to resolve \@starttoc redefinition conflict
 \usepackage{parskip}
 
 %% Footer
@@ -21,9 +25,10 @@
 \DeclareOption{ln}{\fancyfoot[R]{Patel \thepage}}
 \ProcessOptions\relax
 
-%% Title Page
+%% Title Page: \titlepage{paper title}[name(s)][date][advisor name(s)]
 \usepackage{xargs}
-\renewcommandx{\titlepage}[3][2=Raj Patel, 3=\today, usedefault]
+\usepackage{xifthen}
+\renewcommandx{\titlepage}[4][2=Raj Patel, 3=\today, 4, usedefault]
     {%
         \begingroup%
         \centering%
@@ -32,6 +37,11 @@
         {\Huge #1}\\
         \vfill
         {\Large #2}\\
+        \ifthenelse{\isempty{#4}}{}
+            {%
+                \vspace*{0.15in}
+                {\Large Advisor: #4}\\
+            }
         \vspace*{0.3in}
         {\Large #3}\\
         \vspace*{2in}
@@ -46,25 +56,25 @@
 \usepackage[bf, sc]{titlesec}
 \titlelabel{\thetitle.\quad}
 
-%% Abstract
+%% Abstract: \begin{abstract}{keywords} ... \end{abstract}
+\usepackage{hyphenat}
 \newcommand{\keywords}{}
 \renewenvironment{abstract}[1]
     {%
         \def\keywords{#1}%
         \thispagestyle{empty}%
         \phantomsection%
-        \section*{\centering{Abstract}}%
+        \section*{\centering Abstract}%
     }
     {%
         
         
         \hangindent=0.86in%
-        \textbf{Keywords}: \keywords
+        \nohyphens{\textbf{Keywords}: \keywords}
         \clearpage%
     }
 
-%% Table of Contents
-\usepackage[titles]{tocloft}
+%% Table of Contents: \tableofcontents
 \renewcommand{\contentsname}{Table of Contents}
 \setlength{\cftsecnumwidth}{2em}
 \setlength{\cftsubsecnumwidth}{3em}
@@ -84,14 +94,15 @@
         \pagenumbering{arabic}%
     }
 
-%% Equations
+%% Equations: \eqc, \eqp
 \usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{mathrsfs}
 \numberwithin{equation}{section}
 \newcommand{\eqc}{\text{ ,}}
+\newcommand{\eqp}{\text{ .}}
 
-%% Figures
+%% Figures: \figurex{image file name and extension}{caption}{label name}, \cref{label}
 \usepackage{float}
 \usepackage[figurewithin=section]{caption}
 \usepackage{subcaption}
@@ -112,7 +123,7 @@
 %% Diagrams
 \usepackage{tikz}
 
-%% References
+%% References: \references
 \usepackage[style=ieee, sorting=none]{biblatex}
 \addbibresource{references.bib}
 \newcommand{\references}
@@ -120,4 +131,23 @@
         \clearpage%
         \phantomsection%
         \printbibliography[heading=bibintoc]%
+    }
+
+%% Appendix: \appendix[section letter]{section name}
+\renewcommand{\appendix}[2][]
+    {%
+        \clearpage%
+        \phantomsection%
+        \ifthenelse{\isempty{#1}}
+            {%
+                \section*{Appendix}%
+                \addcontentsline{toc}{section}{Appendix}%
+            }
+            {%
+                \section*{Appendix #1}%
+                \addcontentsline{toc}{section}{Appendix #1}%
+            }
+        \begin{center}%
+            \textbf{#2}
+        \end{center}%
     }
